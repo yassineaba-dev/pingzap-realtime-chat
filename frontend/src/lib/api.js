@@ -30,8 +30,24 @@ export const completeOnboarding = async (userData) => {
 };
 
 export async function getUserFriends() {
-  const response = await axiosInstance.get("/users/friends");
-  return response.data;
+  await axiosInstance.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if(token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  }, (error) => {
+    return Promise.reject(error);
+  });
+
+  await axiosInstance.get("/users/friends")
+  .then(response => {
+    console.log(response.data);
+    return response.data;
+  })
+  .catch(error => {
+    console.error('Error fetching user:', error);
+  });
 }
 
 export async function getRecommendedUsers() {
